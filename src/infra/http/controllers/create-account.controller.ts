@@ -1,9 +1,14 @@
-import { ConflictException, UsePipes } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  UsePipes,
+} from '@nestjs/common';
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
-import { PrismaService } from '@/infra/database/prisma/prisma.service';
-import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe';
+import { RegisterStudentUseCase } from '@/domain/forum/application/use-cases/register-student';
+import { StudentAlreadyExistsError } from '@/domain/forum/application/use-cases/errors/student-already-exists-error';
+import { Public } from '@/infra/auth/public';
 
 const createAccountBodySchema = z.object({
   name: z.string(),
@@ -14,8 +19,9 @@ const createAccountBodySchema = z.object({
 type CreateAccountBodySchema = z.infer<typeof createAccountBodySchema>;
 
 @Controller('/accounts')
+@Public()
 export class CreateAccountController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private registerStudentUseCase: RegisterStudentUseCase) {}
 
   @Post()
   @HttpCode(201)
@@ -23,26 +29,21 @@ export class CreateAccountController {
   async handle(@Body() body: CreateAccountBodySchema) {
     const { name, email, password } = body;
 
-    const userWithSameEmail = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
+    const result = await this.registerStudentUseCase.execute({
+      name,
+      email,
+      password,
     });
 
-    const hashedPassword = await hash(password, 8);
+    if (result.isLeft()) {
+      const error = result.value;
 
-    if (userWithSameEmail) {
-      throw new ConflictException(
-        'User with same email address already exists',
-      );
+      switch (error.constructor) {
+        case StudentAlreadyExistsError:
+          throw new ConflictException(error.message);
+        default:
+          throw new BadRequestException(error.message);
+      }
     }
-
-    await this.prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    });
   }
 }

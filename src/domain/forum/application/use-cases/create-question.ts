@@ -4,6 +4,7 @@ import { Question } from '../../enterprise/entities/question';
 import { Either, right } from '@/core/either';
 import { QuestionAttachment } from '../../enterprise/entities/question-attachment';
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list';
+import { Injectable } from '@nestjs/common';
 
 // multipart/form-data -> Rota específica para upload de arquivos (binários)
 // create question -> JSON -> attachmentIds
@@ -17,6 +18,7 @@ interface CreateQuestionUseCaseRequest {
 
 type CreateQuestionUseCaseResponse = Either<null, { question: Question }>;
 
+@Injectable()
 export class CreateQuestionUseCase {
   constructor(private questionsRepository: QuestionsRepository) {}
 

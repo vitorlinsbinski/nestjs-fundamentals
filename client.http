@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "name": "Vitor Linsbinski",
-    "email": "vitorlinsbinski@hotmail.com",
+    "email": "vitorlinsbinski5@hotmail.com",
     "password": "123456"
 }
 
@@ -30,8 +30,8 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "Nova pergunta 3",
-    "content": "Conteúdo da nova pergunta 2"
+    "title": "Nova pergunta 4",
+    "content": "Conteúdo da nova pergunta 4"
 }
 
 ### 
